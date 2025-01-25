@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\ThirdPartyApis\OpenWeatherMap;
+namespace App\ThirdPartyApis\Weather;
 
 enum RequestType: string
 {

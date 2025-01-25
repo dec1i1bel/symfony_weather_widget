@@ -4,41 +4,43 @@ namespace App\Controller;
 
 use App\Entity\Location;
 use App\Repository\GeocodingRepository;
-use App\ThirdPartyApis\OpenWeatherMap\Connector as  OWMConnector;
-use App\ThirdPartyApis\OpenWeatherMap\RequestType as OWMRequestType;
+use App\Repository\WeatherRepository;
+use App\ThirdPartyApis\Weather\Connector;
+use App\ThirdPartyApis\Weather\RequestType;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 
-class OpenWeatherMapApiController extends AbstractController
+class WeatherApiController extends AbstractController
 {
-    public function getLocationCurrentWeather(string $locationName, string $countryCode): JsonResponse
+    #[Route('/api/current/{countryCode}/{locationName}')]
+    public function getLocationCurrentWeather(string $countryCode, string $locationName): JsonResponse
     {
         $location = new Location($locationName, $countryCode);
-        $coordinates = GeocodingRepository::obtainLocationCoordinates($location);
-        $weather = OpenWeatherApiRepository::obtainWeather($coordinates);
+        $locationCoordinates = GeocodingRepository::obtainLocationCoordinates($location);
+        $coordsWeather = WeatherRepository::obtainLocationWeather($locationCoordinates);
 
         return new JsonResponse([
             'status' => 'success',
-            'weather' => $weather
+            'coords-weather' => $coordsWeather
         ]);
     }
 
     #[Route('/api/demo_openweathermap', name: 'demo_openweathermap', methods: ['GET'])]
     public function demoRequest(): JsonResponse
     {
-        $requestType = OWMRequestType::Forecast->value;
+        $requestType = RequestType::Forecast->value;
         $getParams = ['id' => 524901];
 
-        $connector = new OWMConnector($requestType, $getParams);
+        $con = new Connector($requestType, $getParams);
 
-        if ($connector->getRequestType() === null) {
+        if ($con->getRequestType() === null) {
             return new JsonResponse([
                 'status' => 'error',
                 'message' => 'Incorrect request type',
             ]);
         }
 
-        return $connector->get();
+        return $con->get();
     }
 }

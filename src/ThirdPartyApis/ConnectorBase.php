@@ -42,13 +42,18 @@ abstract class ConnectorBase
     private function getUrl(): string
     {
         $url = static::API_ENDPOINT . '/' . $this->requestType . '?';
+        $i = 0;
 
         foreach ($this->getParams as $paramName => $paramValue) {
-            $url .= '&' . $paramName . '=' . $paramValue;
+            if ($i !== 0) {
+                $url .= '&';
+            }
+
+            $url .= $paramName . '=' . $paramValue;
+            $i++;
         }
 
-//        toDo: API_KEY из env
-        $url .= '&appid=' . static::API_KEY;
+        $url .= '&appid=' . $_ENV['API_KEY_OPENWEATHERMAP'];
 
         return $url;
     }
